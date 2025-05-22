@@ -17,6 +17,11 @@ struct Position {
     column: u8,
 }
 
+// pub struct Rectangle {
+//     width: u8,
+//     height: u8,
+// }
+
 pub struct Lamertin {
     stdout: Stdout,
     termios: Termios,
@@ -88,11 +93,11 @@ impl Lamertin {
     }
 
     pub fn init_window(&mut self, rows: u8, columns: u8) {
+        print!("\x1b[2J\x1b[1;1H");
         let row = " ".repeat(columns as usize);
         for _ in 0..rows {
             println!("{}", row);
         }
-        print!("\x1b[1;1H");
         self.stdout.flush().unwrap();
     }
 
@@ -153,6 +158,24 @@ impl Lamertin {
         self.set_pos(current_pos.row, current_pos.column);
     }
 
+    pub fn draw_rect(&mut self, ch: char, width: u8, height: u8) {
+        let row = ch.to_string().repeat(width as usize);
+        for _ in 0..height {
+            let current_pos = self.position;
+            print!("{}", row);
+            self.set_pos(current_pos.row, current_pos.column);
+            self.move_dir(Direction::Down, 1);
+        }
+        self.stdout.flush().unwrap();
+    }
+
+    pub fn draw_rect_at(&mut self, ch: char, row: u8, column: u8, width: u8, height: u8) {
+        let current_pos = self.position;
+        self.set_pos(row, column);
+        self.draw_rect(ch, width, height);
+        self.set_pos(current_pos.row, current_pos.column);
+    }
+
     fn color_to_ansi_fg(color: &Color) -> u32 {
         match color {
             Color::Black => 30,
@@ -184,7 +207,11 @@ impl Lamertin {
     fn paint_palette(&mut self) {
         let fg = Lamertin::color_to_ansi_fg(self.fg_color());
         let bg = Lamertin::color_to_ansi_bg(self.bg_color());
-        print!("\x1b[{fg};{bg}m");
+        if matches!(self.bg_color(), &Color::None) {
+            print!("\x1b[{fg}m");
+        } else {
+            print!("\x1b[{fg};{bg}m");
+        }
         self.stdout.flush().unwrap();
     }
 

@@ -2,7 +2,7 @@ use std::{thread, time::Duration};
 
 use lamertin::core::{Color, Direction, Lamertin};
 
-fn wait() {
+fn _wait() {
     loop {
         thread::sleep(Duration::from_secs(1));
     }
@@ -41,5 +41,9 @@ fn _placement() {
 }
 
 fn main() {
-    wait();
+    let mut lamertin = Lamertin::new().unwrap();
+    lamertin.init_window(10, 10);
+    lamertin.set_fg(&Color::Red);
+    lamertin.draw_rect_at('X', 3, 5, 5, 3);
+    _wait();
 }
